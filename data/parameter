@@ -1,0 +1,251 @@
+[Common] Overall Features:
+
+客流量：
+    平常时刻：
+        total_passenger         = 3000
+        cnt_officer_precheck    = 2
+        cnt_officer_regular     = 5
+        cnt_pane_precheck       = 1
+
+    高峰时刻：
+        total_passenger         = 3000
+        cnt_officer_precheck    = 2
+        cnt_officer_regular     = 5
+        cnt_pane_precheck       = 2
+
+
+航班信息：
+    乘客航班时间：正态分布
+    相邻航班时间间隔：flight_gap_time = 0.5 hour
+
+考察的时段：
+    0~12小时：num_hour = 12
+
+可以插队的时间限制：
+    time_limit = 20 min
+    American:   10 min
+
+Features from Excel:
+    TSA_precheck_arrival_time   = 9.18947
+    Regular_arrival_time        = 12.94478
+    mean_A                      = 11.226875
+    Milimeter_scan_time         = 11.6372
+    X_ray_scan_time             = 6.64846
+    Fetch_scanned_items_time    = 28.62069
+
+Other Features:
+    mean_C                      = 30
+    mean_D                      = 60/0.29
+    ratio_regular_over_precheck = 3
+    p_precheck_rate             = 0.45
+    p_unsafe_rate_precheck      = 0.02
+    p_unsafe_rate_regular       = 0.05
+    k_average_box_precheck      = 2
+    k_average_box_regular       = 4
+
+
+Result:
+【注意】以下结果未模拟高峰时期的正态分布情况
+所有以下结果是平常的客流量的情况
+A) M_M_1_basic:
+    @Param:
+        cnt_milimeter           = 1
+        cnt_x_ray               = 1
+    @Output:
+        # Total Iteration: 10
+            Final Mean: 55.8299098454
+            Final Variance: 3808.9879992
+            Final PASS Rate: 99.662%
+        # Total Iteration: 1
+            Final Mean: 54.3538739462
+            Final Variance: 2810.41331197
+            Final PASS Rate: 99.64%
+    [Attention]: One more graph has been attached here!!!
+
+B) M_M_1_jqueue: [插队只在Stage A发生] [修改了Stage-A的代码，并添加了一个time_limit参数]
+    @Param:
+        cnt_milimeter           = 1
+        cnt_x_ray               = 1
+    @Output:
+        # Total Iteration: 10
+
+        # Total Iteration: 1
+
+    [Attention]: One more graph has been attached here!!!
+
+C) M_M_s_jqueue: [插队只在Stage A发生] [修改了airport, get-arrival-time-list, Stage-A, Stage-B的代码, 添加了serve_MMS函数]
+    @Param:
+        cnt_milimeter           = 1
+        cnt_x_ray               = 1
+    @Output:
+        # Total Iteration: 10
+
+        # Total Iteration: 1
+
+    [Attention]: One more graph has been attached here!!!
+
+D) M_M_s_jqueue_separation: [插队只在Stage A发生] [基本无变化，只是增加了贴标签的时间]
+    @Param:
+        cnt_milimeter           = 1
+        cnt_x_ray               = 1
+    @Output:
+        # Total Iteration: 10
+
+        # Total Iteration: 1
+
+    [Attention]: One more graph has been attached here!!!
+
+E) M_M_s_jqueue_dividing: [插队只在Stage A发生] [设置box_num_limit选择走1:1还是1:2的]
+    @Param:
+        cnt_milimeter           = 1
+        cnt_x_ray               = 1
+    @Output:
+        # Total Iteration: 10
+
+        # Total Iteration: 1
+
+    [Attention]: One more graph has been attached here!!!
+
+Note:
+    1. 从StageA 到 StageB排队顺序如下（M/M/1: 找最短的排进去， M/M/1 & M/M/s两个系统都是按 服务员/设备的id号进行requeue）
+    3. Variance因为数值值域范围所以波动非常厉害
+    4. 假设 箱子的数量：贴标签的时间成平均1:1.3[s]关系，这个比例也是随机生成的【指数分布】
+    5. 人包分离后取包时间忽略
+
+norm_mean, norm_std_dev = 11, 4
+cnt_extra_officer_precheck = 2
+cnt_extra_officer_regular = 3
+cnt_extra_pane_precheck = 1
+
+
+非高峰
+Section 3:
+
+# Basic
+[Iteration 1]
+Final Mean: 203.74188092
+Final Variance: 88400.4519808
+Final PASS Rate: 98.5333333333%
+[Iteration 20]
+Final Mean: 202.302354246 +/- 34.005443075592886
+Final Variance: 98427.9554964 +/- 50985.262197431
+Final PASS Rate: 97.9733333333 +/- 0.04137363626487008%
+
+
+# Basic + jqueue
+[Iteration 1]
+Final Mean: 188.400203666 +/- 0.0
+Final Variance: 67990.9182484 +/- 0.0
+Final PASS Rate: 98.2 +/- 0.0%
+[Iteration 20]
+Final Mean: 184.928256305 +/- 25.2599603940807
+Final Variance: 74041.3497388 +/- 31685.43004087589
+Final PASS Rate: 98.095 +/- 0.04365616922167015%
+
+
+Section 4:
+# MMS + jqueue
+[Iteration 1]
+Final Mean: 112.030701754 +/- 0.0
+Final Variance: 35258.8340776 +/- 0.0
+Final PASS Rate: 98.8 +/- 0.0%
+[Iteration 20]
+Final Mean: 152.481468368 +/- 36.720102681619714
+Final Variance: 93434.8815069 +/- 65516.14580660895
+Final PASS Rate: 98.55 +/- 0.031928740101113406%
+
+
+模拟高峰情况
+# MMS + jqueue + row
+    不开设新的：
+  [Iteration 1]
+    Final Mean: 720.150715901 +/- 0.0
+    Final Variance: 1829603.917 +/- 0.0
+    Final PASS Rate: 88.4666666667 +/- 0.0%
+  [Iteration 20]
+    Final Mean: 666.373330613 +/- 41.89767688315431
+    Final Variance: 1480947.55578 +/- 226946.69501013157
+    Final PASS Rate: 91.0366666667 +/- 0.16309131729732815%
+    开设新的：
+  [Iteration 1]
+    Final Mean: 120.927376171 +/- 0.0
+    Final Variance: 36726.7018878 +/- 0.0
+    Final PASS Rate: 99.6 +/- 0.0%
+  [Iteration 20]
+    Final Mean: 121.820304333 +/- 34.74257116125038
+    Final Variance: 40801.0089683 +/- 33313.832891967
+    Final PASS Rate: 99.7416666667 +/- 0.012150674421154124%
+
+
+# MMS + jqueue + row + box separation
+tagtime_per_box             = 1.3
+[1:1]
+  [Iteration 1]
+    Final Mean: 187.04443702 +/- 0.0
+    Final Variance: 94599.9342098 +/- 0.0
+    Final PASS Rate: 99.7666666667 +/- 0.0%
+  [Iteration 20]
+    Final Mean: 188.660491766 +/- 57.33603819450239
+    Final Variance: 98085.4527318 +/- 63763.95394668478
+    Final PASS Rate: 99.5383333333 +/- 0.016841582137343526%
+
+[3:5]
+  [Iteration 1]
+    Final Mean: 49.1559265442 +/- 0.0
+    Final Variance: 3251.57134635 +/- 0.0
+    Final PASS Rate: 99.8333333333 +/- 0.0%
+  [Iteration 20]
+    Final Mean: 49.2096976584 +/- 0.7034763182567065
+    Final Variance: 3696.56672197 +/- 470.66896112406715
+    Final PASS Rate: 99.8566666667 +/- 0.007681145747868658%
+
+
+# MMS + jqueue + row + box dividing
+boxnum_limit                = 5
+[1:1] and [1:2] selection
+
+[Iteration 1]
+    Final Mean: 100.103078983 +/- 0.0
+    Final Variance: 21573.7303386 +/- 0.0
+    Final PASS Rate: 99.6 +/- 0.0%
+[Iteration 20]
+    Final Mean: 85.149163173 +/- 20.05261884183836
+    Final Variance: 16282.7424172 +/- 15433.162165341424
+    Final PASS Rate: 99.7766666667 +/- 0.010440306508910502%
+
+
+全部在高峰流量下进行
+# Culture Difference:
+# American:
+    M/M/S + jqueue + row
+    time_limit = 10min
+    milimeter +2s
+    x-ray +1.5s
+    [Iteration 1]
+        Final Mean: 180.231748158 +/- 0.0
+        Final Variance: 84761.877974 +/- 0.0
+        Final PASS Rate: 99.5333333333 +/- 0.0%
+    [Iteration 20]
+        Final Mean: 222.802112708 +/- 52.55839430421594
+        Final Variance: 119825.250736 +/- 60322.4478598132
+        Final PASS Rate: 99.4633333333 +/- 0.01957606248003468%
+
+
+
+# Swiss: [No need to repeat the simulation]
+    M/M/S + jqueue + row dividing
+    M/M/S + jqueue + row separation
+
+# China:
+    M/M/S + jqueue + row
+    num_boxes = num_boxes - 1
+
+    [Iteration 1]
+        Final Mean: 81.2080963533 +/- 0.0
+        Final Variance: 11294.9771041 +/- 0.0
+        Final PASS Rate: 99.6333333333 +/- 0.0%
+
+    [Iteration 20]
+        Final Mean: 85.4449423699 +/- 19.16539233582328
+        Final Variance: 15342.3258194 +/- 12249.719403815565
+        Final PASS Rate: 99.7566666667 +/- 0.01000555401320253%

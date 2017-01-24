@@ -1,0 +1,125 @@
+﻿Idea for Problem D
+
+Bottleneck Detection:
+1. Spare time for each stage
+2. Number of Officers variation
+
+特殊情况处理:
+1. 特殊情况插队[优先级调整]
+
+Variation:
+1. Modify
+2. Add
+3. Delete
+
+运筹学的概念！
+
+
+Similation:
+
+Variation:
+家庭乘客间的dependency [optimize, 3人一起]
+Officer的业绩
+模糊数学模型、层次分析法
+
+优化方法：
+人包分离
+
+Key Points in Implementation:
+1. Inverse Transform Method (ITM algorithm) to get regenerate the data based on the distribution function. [http://blog.codinglabs.org/articles/methods-for-generating-random-number-distributions.html#itm算法描述]
+2. Reject Sampling
+
+Things may go wrong:
+1. Gamma Function:
+https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.gamma.html#scipy.special.gamma
+factorial?
+2. 从excel中提取出来的那一页的值是平均值还是exponential分布的特征值lambda
+3. Fetch_scanned_items_time 怎么用进去
+4. Precheck的乘客来的速率比走的速率快
+5. Variance 的计算式子有问题，x^2的替换
+6. 之前说的D-Stage目前搁置成为定值, 应该C-Stage才是满足之前讲的分布和情况
+7. M/M/s/inf 情况下的公式
+
+需要做的Points:
+1. 确定Bottleneck的发生位置（基于basic model的simulation）
+    瓶颈必须考虑到实际的情况，有些变量增加或减少都有个限度【成本】
+2. 修改原有的安检系统（增大客流输出，减小等候时间）：
+    a. 插队模型 【我和何淳接着改现有的策略】【Motivation:有很多人迟到，news_2, Chicago Airport】
+    b. 根据人流少开或多开 【李裱】M/M/s 把式子码出来
+    c. 人包分离，设立等候区域
+    d. 包多的和包少的分两种情况处理
+3. 考虑特殊人群和特殊个体对Strategy的调整，相同的数据【源数据的超集】跑出来结果更优化
+    主要考虑修改过后的模型的健壮性
+4. 对安检环节的管理人员的建议
+    4 是对 2和3的高度概括
+
+Precheck的优势：
+1. 乘客会觉得涉及脱衣服的检查很烦，因此即便人多也更倾向于做这个
+
+Hint:
+1. The TSA has added 152 screening officers at Chicago airports and converted more than 289 part-time officers to full-time since May, officials said.
+原来的系统优化是根据调整officer数量来实现的
+2.  Neffenger pointed to pressure to reduce federal expenditures in recent years and the loss of thousands of screening officers.
+官员数目的增加已经是个bottleneck了
+3. "It seems like there are more people in the TSA PreCheck," said Zamorski, though he noted that the regular lines definitely seem shorter. "I think it's a lot better."
+Precheck的人数太多了，时间线甚至比Regular的长
+4. The TSA advises arriving two hours early for domestic flights and three hours early for international flights. But those early morning security lines sure look busy.
+乘客提前2-3小时前来
+5. "We're projecting around 80,000 passengers (coming through Atlanta airport security) compared to a normal Friday of 73,000 to 75,000."
+可以参考的高峰乘客流量数据
+6. Over Memorial Day weekend, which was busier than a typical summer weekend, the new lanes screened an average of almost 6,900 passengers per day, an increase of about 2,200 passengers.
+可以参考的平时乘客流量数据
+
+
+Expected Waiting Time Result: 至少需要少于7 min [高峰]， 2 min [Overall的平均]
+
+
+Problem in 原来的插队模型：
+1. 之前讨论的插队情况对安检流程客户等待时间没有影响
+
+
+Procedure to Implement the Chadui Events:
+1. Randomly generate the arrival time, service time-A, B, C, D based on the exponential distribution.
+2. Randomly generate the departure time based on the exp_distrib [Reject Sampling, must be greater than arrival time]
+3. 模拟排队的情况，基于M/M/1 和 M/M/s两种情况
+    维护x个队列，每一个队列单独进行插队
+4. 添加插队模型进去:
+5. When going to Stage B from Stage A [Pipeline structure with the minimal time unit as Seconds, also as the clock cycle for each stage]:
+    M/M/1:
+        Choose the Precheck/Regular queue with 最小人数
+    M/M/s:
+        Requeue into two big queues, then do the procedures similar to the Stage-A case
+6. 随机生成X-ray和milimeter的扫描时间，然后作为Stage-B的service时间:
+    Bottleneck Comparasion
+7. Consider to cover the Stage-C and Stage-D [Here also generated randomly based on the exponential distribution, C，D处不排队] time to get the exit time for each person
+8. Save the exit time for each person, then calculate the average waiting time for each person, then get the mean/variance respectively
+
+M/M/1:
+Maintain the same number of queues as the number of officers
+
+M/M/s:
+Maintain 2 queues [precheck and regular], and the first one go to be served once there exist one free officer
+
+
+Things to be figured out:
+[ok]1. Random datasets generated based on exponential distribution.
+2. Set the queue model based on M/M/1 and M/M/s.
+[ok]3. Heapq Usage in Python /or/ Implement a priority queue myself.
+[ok]4. Consider the Pipeline structure to design a framework, Buffer queue merge with the B-stage queue.
+5. Module Integration.
+
+插队Testcase:
+a1 = ps.passenger(3, 0, 0, 0)
+a2 = ps.passenger(5, 0, 0, 0)
+a3 = ps.passenger(7, 0, 0, 0)
+a4 = ps.passenger(5, 0, 0, 0)
+a5 = ps.passenger(9, 0, 0, 0)
+a = []
+a.append(a1)
+a.append(a2)
+a.append(a3)
+a.append(a4)
+a.append(a5)
+limit = 3
+clock = 2
+jqueue(a, clock, limit)
